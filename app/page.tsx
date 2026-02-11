@@ -38,13 +38,12 @@ const actionVerbs: Record<string, string> = {
   deleted: "Deleted",
 };
 
-// Sample activities for demo
 const sampleActivities: ActivityItem[] = [
   { id: "1", type: "project", action: "created", title: "Mission Control Dashboard", source: "manual", timestamp: Date.now() - 1000 * 60 * 5 },
-  { id: "2", type: "task", action: "completed", title: "Set up Convex backend", source: "trello", timestamp: Date.now() - 1000 * 60 * 15 },
+  { id: "2", type: "task", action: "completed", title: "Set up Next.js + Tailwind", source: "trello", timestamp: Date.now() - 1000 * 60 * 15 },
   { id: "3", type: "idea", action: "created", title: "Add Trello integration for auto-sync", timestamp: Date.now() - 1000 * 60 * 30 },
   { id: "4", type: "milestone", action: "completed", title: "Phase 1: Core infrastructure", source: "notion", timestamp: Date.now() - 1000 * 60 * 60 },
-  { id: "5", type: "note", action: "created", title: "Research WebSocket alternatives", timestamp: Date.now() - 1000 * 60 * 120 },
+  { id: "5", type: "note", action: "created", title: "Research Convex for real-time sync", timestamp: Date.now() - 1000 * 60 * 120 },
 ];
 
 export default function MissionControl() {
@@ -57,19 +56,16 @@ export default function MissionControl() {
     description: "",
   });
 
-  // Load from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem("mission-control-activities");
     if (stored) {
       setActivities(JSON.parse(stored));
     } else {
-      // First time: load sample data
       setActivities(sampleActivities);
       localStorage.setItem("mission-control-activities", JSON.stringify(sampleActivities));
     }
   }, []);
 
-  // Save to localStorage on change
   useEffect(() => {
     if (activities.length > 0) {
       localStorage.setItem("mission-control-activities", JSON.stringify(activities));
@@ -114,7 +110,6 @@ export default function MissionControl() {
 
   return (
     <main className="min-h-screen p-8">
-      {/* Header */}
       <header className="max-w-4xl mx-auto mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -139,7 +134,6 @@ export default function MissionControl() {
         </div>
       </header>
 
-      {/* Stats */}
       <div className="max-w-4xl mx-auto mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <p className="text-gray-500 text-sm">Total Activities</p>
@@ -159,7 +153,6 @@ export default function MissionControl() {
         </div>
       </div>
 
-      {/* Add Activity Form */}
       {showForm && (
         <div className="max-w-4xl mx-auto mb-8">
           <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-6">
@@ -230,7 +223,6 @@ export default function MissionControl() {
         </div>
       )}
 
-      {/* Activity Feed */}
       <div className="max-w-4xl mx-auto">
         <h2 className="text-xl font-semibold text-gray-300 mb-4">Activity Feed</h2>
         
@@ -285,7 +277,6 @@ export default function MissionControl() {
         )}
       </div>
 
-      {/* Footer */}
       <footer className="max-w-4xl mx-auto mt-12 pt-8 border-t border-gray-800 text-center text-gray-600 text-sm">
         <p>Mission Control v1.0 • Built by Leo 🚀</p>
         <p className="mt-1">Convex integration coming soon for real-time sync</p>
