@@ -1,0 +1,14 @@
+# Render Blueprint
+services:
+  - type: web
+    name: mission-control
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_CONVEX_URL
+        sync: false  # Set this in Render dashboard
+    healthCheckPath: /
+    autoDeploy: true
