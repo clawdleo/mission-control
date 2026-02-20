@@ -1,7 +1,10 @@
 services:
   - type: web
     name: mission-control
-    runtime: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: out
-    branch: master
+    env: static
+    buildCommand: echo "No build needed - static HTML"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
