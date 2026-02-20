@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Control - Leo's Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #e5e5e5;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 180px;
+      background: #141414;
+      border-right: 1px solid #252525;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px 30px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    
+    .nav-item {
+      padding: 10px 20px;
+      font-size: 14px;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .nav-item:hover {
+      background: #1a1a1a;
+      color: #e5e5e5;
+    }
+    
+    .nav-item.active {
+      background: #2d3748;
+      color: #fff;
+      border-radius: 8px;
+      margin: 0 10px;
+      padding-left: 10px;
+    }
+    
+    .nav-icon {
+      font-size: 16px;
+      width: 20px;
+    }
+    
+    /* Main content */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px 60px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .search-box {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 200px;
+    }
+    
+    .search-box input {
+      background: none;
+      border: none;
+      outline: none;
+      color: #888;
+      font-size: 13px;
+      width: 100%;
+    }
+    
+    .header-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #e5e5e5;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn:hover {
+      background: #252525;
+      border-color: #3a3a3a;
+    }
+    
+    .quote {
+      background: linear-gradient(135deg, #1a1f2e 0%, #2d1b3d 100%);
+      border: 1px solid #3a3a4a;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 50px;
+      text-align: center;
+    }
+    
+    .quote-text {
+      font-size: 20px;
+      font-style: italic;
+      color: #b8b8c8;
+      line-height: 1.6;
+    }
+    
+    .team-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    
+    .team-title {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    
+    .team-subtitle {
+      font-size: 18px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+    
+    .team-description {
+      font-size: 15px;
+      color: #666;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    
+    /* Chief card */
+    .chief-card {
+      background: linear-gradient(135deg, #1e2a3a 0%, #2a1e3a 100%);
+      border: 1px solid #3a4a5a;
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 60px;
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+    
+    .chief-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+    
+    .chief-info {
+      flex: 1;
+    }
+    
+    .chief-name {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .chief-title {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 12px;
+    }
+    
+    .chief-desc {
+      font-size: 14px;
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .tag {
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .tag.green {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+    
+    .tag.purple {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+    }
+    
+    .tag.amber {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+    
+    .tag.rose {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fb7185;
+    }
+    
+    .tag.cyan {
+      background: rgba(6, 182, 212, 0.2);
+      color: #22d3ee;
+    }
+    
+    /* Team grid */
+    .flow-divider {
+      text-align: center;
+      margin: 40px 0;
+      position: relative;
+    }
+    
+    .flow-divider::before,
+    .flow-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #3a3a3a, transparent);
+    }
+    
+    .flow-divider::before {
+      left: 0;
+    }
+    
+    .flow-divider::after {
+      right: 0;
+    }
+    
+    .flow-label {
+      display: inline-block;
+      padding: 8px 20px;
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 20px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666;
+      font-weight: 600;
+    }
+    
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    
+    .agent-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.3s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .agent-card:hover {
+      border-color: #4a4a5a;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .agent-card:hover::before {
+      opacity: 1;
+    }
+    
+    .agent-header {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .agent-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    
+    .agent-avatar.green {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .agent-avatar.amber {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .agent-avatar.purple {
+      background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+    }
+    
+    .agent-avatar.blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+    
+    .agent-avatar.rose {
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    }
+    
+    .agent-info {
+      flex: 1;
+    }
+    
+    .agent-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    
+    .agent-role {
+      font-size: 13px;
+      color: #666;
+    }
+    
+    .agent-desc {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .role-card-link {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 12px;
+    }
+    
+    .status-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .stats-footer {
+      margin-top: 60px;
+      padding-top: 40px;
+      border-top: 1px solid #2a2a2a;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      text-align: center;
+    }
+    
+    .stat-item {
+      padding: 20px;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">🦁</div>
+        <span>Mission Control</span>
+      </div>
+      
+      <div class="nav-item">
+        <span class="nav-icon">📋</span> Tasks
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📝</span> Content
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">✅</span> Approvals
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">👑</span> Council
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📅</span> Calendar
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🚀</span> Projects
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🧠</span> Memory
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📚</span> Docs
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">👥</span> People
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🏢</span> Office
+      </div>
+      <div class="nav-item active">
+        <span class="nav-icon">🤖</span> Team
+      </div>
+    </div>
+    
+    <!-- Main content -->
+    <div class="main">
+      <div class="header">
+        <div class="header-left">
+          <div class="header-title">Mission Control</div>
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" placeholder="Search... ⌘K">
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="btn">⏸️ Pause</button>
+          <button class="btn">📡 Ping Leo</button>
+          <button class="btn">🔄</button>
+        </div>
+      </div>
+      
+      <div class="quote">
+        <div class="quote-text">
+          "An autonomous organization of AI agents that does work for me and produces value 24/7"
+        </div>
+      </div>
+      
+      <div class="team-header">
+        <h1 class="team-title">Meet the Team</h1>
+        <p class="team-subtitle">5 AI agents, each with a real role and a real personality.</p>
+        <p class="team-description">
+          We wanted to see what happens when AI doesn't just answer questions - but actually runs a 
+          company. Research markets. Build products. Manage money. Post on social media. All without being 
+          told what to do.
+        </p>
+      </div>
+      
+      <!-- Chief of Staff -->
+      <div class="chief-card">
+        <div class="chief-avatar">🦁</div>
+        <div class="chief-info">
+          <div class="chief-name">Leo</div>
+          <div class="chief-title">Chief of Staff</div>
+          <div class="chief-desc">
+            Coordinates, delegates, keeps the ship tight. The first point of contact between boss and machine.
+            Runs heartbeats, manages memory, orchestrates all other agents. The brain of the operation.
+          </div>
+          <div class="tags">
+            <span class="tag">Orchestration</span>
+            <span class="tag green">Clarity</span>
+            <span class="tag purple">Delegation</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Input Signal Section -->
+      <div class="flow-divider">
+        <span class="flow-label">↓ Input Signal</span>
+      </div>
+      
+      <div class="team-grid">
+        <!-- Scout -->
+        <div class="agent-card">
+          <div class="status-indicator"></div>
+          <div class="agent-header">
+            <div class="agent-avatar green">🔍</div>
+            <div class="agent-info">
+              <div class="agent-name">Scout</div>
+              <div class="agent-role">Trend Analyst</div>
+            </div>
+          </div>
+          <div class="agent-desc">
+            Finds leads, tracks signals, scouts opportunities. Monitors crypto projects (Bittensor-level innovation),
+            DJI Avinox eMTB news, Reddit/X problem hunting, vintage MTB deals on willhaben.at.
+          </div>
+          <div class="tags">
+            <span class="tag green">Speed</span>
+            <span class="tag green">Radar</span>
+            <span class="tag green">Intuition</span>
+          </div>
+          <div class="role-card-link">ROLE CARD →</div>
+        </div>
+        
+        <!-- Analyst -->
+        <div class="agent-card">
+          <div class="status-indicator"></div>
+          <div class="agent-header">
+            <div class="agent-avatar purple">📊</div>
+            <div class="agent-info">
+              <div class="agent-name">Sage</div>
+              <div class="agent-role">Data Analyst</div>
+            </div>
+          </div>
+          <div class="agent-desc">
+            Tracks numbers, maintains Second Brain. Manages Notion databases (Tasks, Transactions, Net Worth, 
+            Budget Targets), daily journals, keto tracking. Turns chaos into clarity.
+          </div>
+          <div class="tags">
+            <span class="tag purple">Precision</span>
+            <span class="tag purple">Memory</span>
+            <span class="tag purple">Insight</span>
+          </div>
+          <div class="role-card-link">ROLE CARD →</div>
+        </div>
+      </div>
+      
+      <!-- Processing Section -->
+      <div class="flow-divider">
+        <span class="flow-label">⚙️ Processing</span>
+      </div>
+      
+      <div class="team-grid">
+        <!-- Builder -->
+        <div class="agent-card">
+          <div class="status-indicator"></div>
+          <div class="agent-header">
+            <div class="agent-avatar amber">⚡</div>
+            <div class="agent-info">
+              <div class="agent-name">Forge</div>
+              <div class="agent-role">Product Builder</div>
+            </div>
+          </div>
+          <div class="agent-desc">
+            Ships products, builds features, codes apps. Main focus: GAZDA (employer review platform). 
+            Also builds: Verity, Patina, Store Audit, MTB Hunter. Prototype to production in hours.
+          </div>
+          <div class="tags">
+            <span class="tag amber">Execution</span>
+            <span class="tag amber">Velocity</span>
+            <span class="tag amber">Quality</span>
+          </div>
+          <div class="role-card-link">ROLE CARD →</div>
+        </div>
+        
+        <!-- Operator -->
+        <div class="agent-card">
+          <div class="status-indicator"></div>
+          <div class="agent-header">
+            <div class="agent-avatar blue">🤖</div>
+            <div class="agent-info">
+              <div class="agent-name">Ops</div>
+              <div class="agent-role">System Operator</div>
+            </div>
+          </div>
+          <div class="agent-desc">
+            Runs operations 24/7. Trading bot (WETH/USDC on Base), email-to-Trello processing (work inbox), 
+            cron jobs, automation. The machine that never sleeps.
+          </div>
+          <div class="tags">
+            <span class="tag blue">Automation</span>
+            <span class="tag blue">Reliability</span>
+            <span class="tag blue">24/7</span>
+          </div>
+          <div class="role-card-link">ROLE CARD →</div>
+        </div>
+      </div>
+      
+      <!-- Output Action Section -->
+      <div class="flow-divider">
+        <span class="flow-label">↑ Output Action</span>
+      </div>
+      
+      <div class="team-grid">
+        <!-- Publisher -->
+        <div class="agent-card">
+          <div class="status-indicator"></div>
+          <div class="agent-header">
+            <div class="agent-avatar rose">📢</div>
+            <div class="agent-info">
+              <div class="agent-name">Echo</div>
+              <div class="agent-role">Social Publisher</div>
+            </div>
+          </div>
+          <div class="agent-desc">
+            Posts, engages, grows the audience. Manages Patina MTB (@patina.mtb Instagram, @patina_mtb Twitter).
+            Creates carousel content, hooks storytelling. Makes noise that matters.
+          </div>
+          <div class="tags">
+            <span class="tag rose">Viral</span>
+            <span class="tag rose">Speed</span>
+            <span class="tag rose">Reach</span>
+          </div>
+          <div class="role-card-link">ROLE CARD →</div>
+        </div>
+      </div>
+      
+      <!-- Stats Footer -->
+      <div class="stats-footer">
+        <div class="stat-item">
+          <div class="stat-value">24/7</div>
+          <div class="stat-label">Uptime</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">5</div>
+          <div class="stat-label">Active Agents</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">12</div>
+          <div class="stat-label">Live Projects</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">$42.64</div>
+          <div class="stat-label">Trading Portfolio</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">847</div>
+          <div class="stat-label">Reviews Collected</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
