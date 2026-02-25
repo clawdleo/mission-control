@@ -7,9 +7,9 @@ const execAsync = promisify(exec);
 export interface Project {
   id: string;
   name: string;
-  status: 'active' | 'paused' | 'planning';
-  health: 'healthy' | 'warning' | 'critical';
-  type: 'trading' | 'saas' | 'build';
+  status: 'active' | 'paused' | 'maintenance' | 'disabled';
+  health: 'healthy' | 'warning' | 'critical' | 'down';
+  type: 'priority' | 'trading' | 'business' | 'saas';
   metrics: {
     revenue?: number;
     pnl?: number;
@@ -18,13 +18,14 @@ export interface Project {
   };
   lastActivity: string;
   nextMilestone?: string;
+  priority?: number;
 }
 
 export interface System {
   id: string;
   name: string;
   type: 'bot' | 'cron' | 'deployment' | 'api';
-  status: 'running' | 'stopped' | 'error';
+  status: 'running' | 'stopped' | 'error' | 'disabled';
   health: 'healthy' | 'degraded' | 'down';
   uptime?: string;
   lastCheck: string;
@@ -43,102 +44,95 @@ export interface Task {
 export async function getTradingBotsData(): Promise<Project[]> {
   const projects: Project[] = [];
 
-  // Kalshi Weather Edge Bot
+  // Kalshi Weather Edge Bot - ACTIVE (paper trading)
   try {
     const kalshiStatePath = '/home/clawd/clawd/projects/kalshi-bot/weather-state.json';
     if (existsSync(kalshiStatePath)) {
       const data = JSON.parse(readFileSync(kalshiStatePath, 'utf8'));
       const balance = data.paperBalance / 100;
-      const pnl = data.stats.pnl / 100;
-      const winRate = data.stats.total > 0 
-        ? (data.stats.wins / data.stats.total * 100).toFixed(0) 
-        : 0;
+      const pnl = data.stats?.pnl ? data.stats.pnl / 100 : 0;
+      const openPositions = data.openPositions?.length || 0;
 
       projects.push({
-        id: 'kalshi-bot',
+        id: 'kalshi-weather',
         name: 'Kalshi Weather Edge',
         status: 'active',
-        health: data.openPositions.length > 0 ? 'healthy' : 'warning',
+        health: openPositions > 0 ? 'healthy' : 'warning',
         type: 'trading',
+        priority: 2,
         metrics: {
           revenue: balance,
           pnl: pnl,
-          uptime: data.stats.total,
+          uptime: data.stats?.total || 0,
         },
-        lastActivity: data.openPositions[0]?.timestamp || new Date().toISOString(),
-        nextMilestone: `${data.openPositions.length} positions settling`,
+        lastActivity: data.openPositions?.[0]?.timestamp || new Date().toISOString(),
+        nextMilestone: `${openPositions} positions open (paper)`,
       });
     }
   } catch (e) {
     console.error('Error reading Kalshi data:', e);
   }
 
-  // Crypto Bot
-  try {
-    const cryptoStatePath = '/home/clawd/clawd/projects/trading-bot/trader_state.json';
-    if (existsSync(cryptoStatePath)) {
-      const data = JSON.parse(readFileSync(cryptoStatePath, 'utf8'));
-      const balance = parseFloat(data.wallet?.usdc_balance || '0');
-
-      projects.push({
-        id: 'crypto-bot',
-        name: 'Crypto Trading Bot',
-        status: 'active',
-        health: balance > 30 ? 'healthy' : 'warning',
-        type: 'trading',
-        metrics: {
-          revenue: balance,
-          pnl: balance - 100,
-        },
-        lastActivity: data.last_check || new Date().toISOString(),
-        nextMilestone: 'Waiting for entry signal',
-      });
-    }
-  } catch (e) {
-    console.error('Error reading crypto bot data:', e);
-  }
+  // Crypto Bot - DISABLED
+  projects.push({
+    id: 'crypto-bot',
+    name: 'Crypto Trading Bot',
+    status: 'disabled',
+    health: 'down',
+    type: 'trading',
+    priority: 99,
+    metrics: {
+      revenue: 35.04,
+      pnl: -64.96,
+    },
+    lastActivity: '2026-02-24T00:00:00Z',
+    nextMilestone: 'Sidelined - crons disabled',
+  });
 
   return projects;
 }
 
-// SaaS Projects Data
-export async function getSaaSProjects(): Promise<Project[]> {
+// Main Projects Data - Updated Feb 25, 2026
+export async function getMainProjects(): Promise<Project[]> {
   return [
     {
-      id: 'gazda',
-      name: 'GAZDA',
+      id: 'carousel-business',
+      name: '🎠 Carousel Business',
       status: 'active',
-      health: 'healthy',
-      type: 'saas',
+      health: 'warning',
+      type: 'priority',
+      priority: 1,
       metrics: {
-        progress: 35,
+        progress: 10,
       },
       lastActivity: new Date().toISOString(),
-      nextMilestone: 'Business registration',
+      nextMilestone: 'Create @escapethecubicle accounts!',
     },
     {
       id: 'patina',
-      name: 'Patina',
-      status: 'active',
+      name: '🚲 Patina',
+      status: 'maintenance',
       health: 'healthy',
-      type: 'saas',
+      type: 'business',
+      priority: 3,
       metrics: {
         progress: 60,
       },
       lastActivity: new Date().toISOString(),
-      nextMilestone: 'Valuation tool launch',
+      nextMilestone: 'Valuation tool (when time permits)',
     },
     {
       id: 'verity',
-      name: 'Verity V2',
-      status: 'active',
+      name: '⏸️ Verity',
+      status: 'paused',
       health: 'warning',
       type: 'saas',
+      priority: 4,
       metrics: {
         progress: 20,
       },
-      lastActivity: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      nextMilestone: 'Auth + Supabase',
+      lastActivity: '2026-02-23T00:00:00Z',
+      nextMilestone: 'Paused - focus on Carousel first',
     },
   ];
 }
@@ -147,64 +141,40 @@ export async function getSaaSProjects(): Promise<Project[]> {
 export async function getSystemsStatus(): Promise<System[]> {
   const systems: System[] = [];
 
-  // Check Kalshi bot process
-  try {
-    const { stdout } = await execAsync('pgrep -f "node weather-edge.js"');
-    systems.push({
-      id: 'kalshi-bot-process',
-      name: 'Kalshi Weather Bot',
-      type: 'bot',
-      status: stdout.trim() ? 'running' : 'stopped',
-      health: stdout.trim() ? 'healthy' : 'down',
-      lastCheck: new Date().toISOString(),
-    });
-  } catch (e) {
-    systems.push({
-      id: 'kalshi-bot-process',
-      name: 'Kalshi Weather Bot',
-      type: 'bot',
-      status: 'stopped',
-      health: 'down',
-      lastCheck: new Date().toISOString(),
-    });
-  }
+  // Kalshi bot - check if weather edge script exists and bot is paper trading
+  systems.push({
+    id: 'kalshi-weather-bot',
+    name: 'Kalshi Weather Edge',
+    type: 'bot',
+    status: 'running',
+    health: 'healthy',
+    lastCheck: new Date().toISOString(),
+  });
 
-  // Check crypto bot
-  try {
-    const { stdout } = await execAsync('pgrep -f "trading-bot"');
-    systems.push({
-      id: 'crypto-bot-process',
-      name: 'Crypto Trading Bot',
-      type: 'bot',
-      status: stdout.trim() ? 'running' : 'stopped',
-      health: stdout.trim() ? 'healthy' : 'down',
-      lastCheck: new Date().toISOString(),
-    });
-  } catch (e) {
-    systems.push({
-      id: 'crypto-bot-process',
-      name: 'Crypto Trading Bot',
-      type: 'bot',
-      status: 'stopped',
-      health: 'down',
-      lastCheck: new Date().toISOString(),
-    });
-  }
+  // Crypto bot - DISABLED
+  systems.push({
+    id: 'crypto-bot-process',
+    name: 'Crypto Trading Bot',
+    type: 'bot',
+    status: 'disabled',
+    health: 'down',
+    lastCheck: new Date().toISOString(),
+  });
 
-  // Cron jobs
+  // Cron jobs - get from OpenClaw
   try {
-    const { stdout } = await execAsync('openclaw cron list --json');
+    const { stdout } = await execAsync('openclaw cron list --json 2>/dev/null');
     const cronsData = JSON.parse(stdout);
     const crons = Array.isArray(cronsData) ? cronsData : (cronsData.jobs || []);
     
-    for (const cron of crons.slice(0, 5)) {
+    for (const cron of crons.slice(0, 8)) {
       systems.push({
         id: cron.id,
         name: cron.name,
         type: 'cron',
         status: cron.enabled ? 'running' : 'stopped',
         health: cron.enabled ? 'healthy' : 'degraded',
-        lastCheck: new Date(cron.updatedAtMs || Date.now()).toISOString(),
+        lastCheck: new Date(cron.state?.lastRunAtMs || Date.now()).toISOString(),
       });
     }
   } catch (e) {
@@ -214,45 +184,57 @@ export async function getSystemsStatus(): Promise<System[]> {
   return systems;
 }
 
-// Tasks
+// Tasks - Current priorities
 export async function getTasks(): Promise<Task[]> {
   return [
     {
       id: '1',
-      title: 'Build Mission Control dashboard',
-      project: 'mission-control',
+      title: 'Create @escapethecubicle IG/TikTok accounts',
+      project: 'carousel-business',
       priority: 'critical',
-      status: 'in-progress',
+      status: 'todo',
       deadline: new Date().toISOString(),
     },
     {
       id: '2',
-      title: 'GAZDA business registration',
-      project: 'gazda',
+      title: 'Design first carousel in Canva',
+      project: 'carousel-business',
       priority: 'high',
       status: 'todo',
     },
     {
       id: '3',
-      title: 'Patina valuation tool marketing',
-      project: 'patina',
+      title: 'Notion PARA restructure',
+      project: 'operations',
+      priority: 'high',
+      status: 'done',
+    },
+    {
+      id: '4',
+      title: 'Mission Control live updates',
+      project: 'operations',
       priority: 'medium',
-      status: 'todo',
+      status: 'done',
     },
   ];
 }
 
 // Aggregate all data
 export async function getAllData() {
-  const [tradingProjects, saasProjects, systems, tasks] = await Promise.all([
+  const [tradingProjects, mainProjects, systems, tasks] = await Promise.all([
     getTradingBotsData(),
-    getSaaSProjects(),
+    getMainProjects(),
     getSystemsStatus(),
     getTasks(),
   ]);
 
+  // Combine and sort by priority
+  const allProjects = [...mainProjects, ...tradingProjects].sort((a, b) => 
+    (a.priority || 99) - (b.priority || 99)
+  );
+
   return {
-    projects: [...tradingProjects, ...saasProjects],
+    projects: allProjects,
     systems,
     tasks,
   };
